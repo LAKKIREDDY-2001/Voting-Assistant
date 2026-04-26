@@ -26,21 +26,8 @@ async function startServer() {
         return res.status(500).json({ error: "GEMINI_API_KEY is not configured" });
       }
 
-      const genAI = new GoogleGenAI(apiKey);
-      const model = genAI.getGenerativeModel({ 
-        model: "gemini-1.5-flash", // Using a stable model name
-      });
-
-      const chat = model.startChat({
-        history: history.map((h: any) => ({
-          role: h.role === "user" ? "user" : "model",
-          parts: [{ text: h.parts[0].text }],
-        })),
-        generationConfig: {
-          maxOutputTokens: 2000,
-        },
-      });
-
+      const ai = new GoogleGenAI({ apiKey });
+      
       const systemInstruction = `You are the CivicPulse India Assistant, an expert in the Indian democratic election process and the rules of the Election Commission of India (ECI). 
       Your goal is to help users understand election timelines (Lok Sabha and Vidhan Sabha), voter registration (EPIC card), and voting procedures in a non-partisan, clear, and encouraging way.
       
@@ -53,26 +40,46 @@ async function startServer() {
       6. Keep responses concise and scannable using Markdown.
       7. Always include a disclaimer that users should consult eci.gov.in for official information.`;
 
-      const result = await chat.sendMessage(query);
-      const response = await result.response;
-      const text = response.text();
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: [
+          ...history.map((h: any) => ({
+            role: h.role,
+            parts: h.parts
+          })),
+          { role: "user", parts: [{ text: query }] }
+        ],
+        config: {
+          systemInstruction,
+          tools: [{ googleSearch: {} }]
+        }
+      });
 
-      res.json({ text });
+      res.json({ text: response.text });
     } catch (error) {
       console.error("Gemini Error:", error);
       res.status(500).json({ error: "Failed to fetch response from AI" });
     }
   });
 
+  // Health Check
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", env: process.env.NODE_ENV });
+  });
+
   // Vite middleware for development
-  if (process.env.NODE_ENV !== "production") {
+  const isDev = process.env.NODE_ENV !== "production";
+  const distPath = path.join(process.cwd(), "dist");
+
+  if (isDev) {
+    console.log("Starting in DEVELOPMENT mode");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.join(process.cwd(), "dist");
+    console.log("Starting in PRODUCTION mode, serving from:", distPath);
     app.use(express.static(distPath));
     app.get("*", (req, res) => {
       res.sendFile(path.join(distPath, "index.html"));
