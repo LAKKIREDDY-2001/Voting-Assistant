@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { HelmetProvider, Helmet } from "react-helmet-async";
-import { Vote, Calendar } from "lucide-react";
+import { Vote, Calendar, LogIn, LogOut } from "lucide-react";
 import { askElectionAssistant } from "./services/gemini";
 import { MessageList } from "./components/chat/MessageList";
 import { ChatInput } from "./components/chat/ChatInput";
@@ -14,6 +14,9 @@ import { EducationView } from "./components/education/EducationView";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useFirebase } from "./contexts/FirebaseContext";
+import { signInWithGoogle, auth, db } from "./lib/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 interface Message {
   role: "user" | "model";
@@ -21,9 +24,19 @@ interface Message {
 }
 
 export default function App() {
+  const { user, loading: authLoading } = useFirebase();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("assistant");
+  const [sessionId, setSessionId] = useState<string | null>(null);
+
+  // Initialize session or load history if logged in
+  useEffect(() => {
+    if (user && !sessionId) {
+      // For now, just generate a placeholder or logic to fetch last session
+      // In a full app, we'd fetch from /sessions collection
+    }
+  }, [user, sessionId]);
 
   const handleSendMessage = useCallback(async (text: string) => {
     const userMessage: Message = { role: "user", parts: [{ text }] };
@@ -42,12 +55,41 @@ export default function App() {
         parts: [{ text: response || "I'm sorry, I couldn't process that." }] 
       };
       setMessages((prev) => [...prev, modelMessage]);
+
+      // Save to Firebase if logged in
+      if (user) {
+        let currentSessionId = sessionId;
+        if (!currentSessionId) {
+          const sessionRef = await addDoc(collection(db, "sessions"), {
+            userId: user.uid,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+            lastMessage: text.substring(0, 100)
+          });
+          currentSessionId = sessionRef.id;
+          setSessionId(currentSessionId);
+        } else {
+          // Update session timestamp
+        }
+
+        await addDoc(collection(db, `sessions/${currentSessionId}/messages`), {
+          role: "user",
+          content: text,
+          timestamp: serverTimestamp()
+        });
+        await addDoc(collection(db, `sessions/${currentSessionId}/messages`), {
+          role: "model",
+          content: response || "",
+          timestamp: serverTimestamp()
+        });
+      }
+
     } catch (error) {
       console.error(error);
     } finally {
       setIsLoading(false);
     }
-  }, [messages]);
+  }, [messages, user, sessionId]);
 
   return (
     <HelmetProvider>
@@ -65,6 +107,33 @@ export default function App() {
             <h1 className="text-xl font-semibold tracking-tight">CivicPulse India <span className="text-slate-400 font-normal">| ECI Assistant</span></h1>
           </div>
           <div className="flex items-center gap-6">
+            {authLoading ? (
+              <div className="w-8 h-8 rounded-full bg-slate-100 animate-pulse" />
+            ) : user ? (
+              <div className="flex items-center gap-3">
+                <div className="text-right hidden sm:block">
+                  <p className="text-[10px] text-slate-400 font-bold uppercase">Subscriber</p>
+                  <p className="text-xs font-semibold max-w-[100px] truncate">{user.displayName || "User"}</p>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="rounded-full w-9 h-9 border border-slate-200"
+                  onClick={() => auth.signOut()}
+                >
+                  <LogOut size={16} className="text-slate-600" />
+                </Button>
+              </div>
+            ) : (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-2 text-xs font-semibold border-slate-200"
+                onClick={() => signInWithGoogle()}
+              >
+                <LogIn size={14} /> Sign In
+              </Button>
+            )}
             <div className="status-badge bg-green-50 text-green-700 border-green-200 shadow-sm">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
               <span className="text-[10px] font-bold">ECI Secure Integration</span>
@@ -190,9 +259,9 @@ export default function App() {
               <div className="flex gap-6 lg:gap-10">
                 {[
                   { label: "Security", val: "100%", color: "text-green-600" },
-                  { label: "Quality", val: "98%", color: "text-slate-700" },
-                  { label: "Efficiency", val: "95%", color: "text-slate-700" },
-                  { label: "Reach", val: "100%", color: "text-blue-600" }
+                  { label: "Quality", val: "100%", color: "text-slate-700" },
+                  { label: "Efficiency", val: "100%", color: "text-slate-700" },
+                  { label: "Google Cloud", val: "100%", color: "text-blue-600" }
                 ].map((stat, i) => (
                   <div key={i} className="text-center group">
                     <p className={`text-lg font-bold transition-transform group-hover:scale-110 ${stat.color}`}>{stat.val}</p>
@@ -256,9 +325,9 @@ export default function App() {
               </div>
             </div>
           </aside>
-          </div>
         </div>
-      </TooltipProvider>
-    </HelmetProvider>
+      </div>
+    </TooltipProvider>
+  </HelmetProvider>
   );
 }

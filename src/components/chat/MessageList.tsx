@@ -51,6 +51,8 @@ export function MessageList({ messages, isLoading }: MessageListProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="flex gap-3 flex-row"
+            role="status"
+            aria-label="Thinking"
           >
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border shadow bg-muted">
               <Bot size={18} />

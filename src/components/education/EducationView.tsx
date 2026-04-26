@@ -40,7 +40,7 @@ const EDU_MODULES = [
 
 export function EducationView() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" role="list">
       {EDU_MODULES.map((module, i) => (
         <motion.div
           key={i}
@@ -48,6 +48,7 @@ export function EducationView() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: i * 0.1 }}
+          role="listitem"
         >
           <Card className="h-full flex flex-col hover:shadow-md transition-shadow">
             <CardHeader>
