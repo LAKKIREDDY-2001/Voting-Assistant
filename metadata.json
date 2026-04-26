@@ -1,0 +1,6 @@
+{
+  "name": "CivicPulse India",
+  "description": "An interactive, AI-powered assistant designed to simplify the Indian election process, timelines, and steps for voters.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["AI Assistant", "Interactive Timelines", "Educational Modules"]
+}
