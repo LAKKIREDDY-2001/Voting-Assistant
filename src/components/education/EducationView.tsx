@@ -56,7 +56,12 @@ export function EducationView() {
             </CardContent>
             <CardFooter className="pt-0">
               <Button variant="ghost" className="w-full justify-between" asChild>
-                <a href={module.link} target="_blank" rel="noopener noreferrer">
+                <a 
+                  href={module.link} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  aria-label={`Learn more about ${module.title} on external ECI website`}
+                >
                   Learn More
                   <ExternalLink size={16} />
                 </a>

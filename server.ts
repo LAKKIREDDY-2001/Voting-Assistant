@@ -20,6 +20,12 @@ async function startServer() {
   app.post("/api/chat", async (req, res) => {
     try {
       const { query, history } = req.body;
+      
+      // Security: Validate query input
+      if (!query || typeof query !== 'string' || query.length > 5000) {
+        return res.status(400).json({ error: "Invalid query" });
+      }
+
       const apiKey = process.env.GEMINI_API_KEY;
 
       if (!apiKey) {

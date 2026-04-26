@@ -15,7 +15,7 @@ interface MessageListProps {
 
 export function MessageList({ messages, isLoading }: MessageListProps) {
   return (
-    <ScrollArea className="h-full pr-4">
+    <ScrollArea className="h-full pr-4" role="log" aria-live="polite" aria-label="Conversation history">
       <div className="flex flex-col gap-4">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-[400px] text-center text-muted-foreground">

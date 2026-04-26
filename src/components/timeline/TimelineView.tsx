@@ -7,7 +7,7 @@ import * as Icons from "lucide-react";
 
 export function TimelineView() {
   return (
-    <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent">
+    <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent" role="list" aria-label="Election process timeline">
       {ELECTION_PHASES.map((phase, index) => {
         const Icon = (Icons as any)[phase.icon] || Circle;
         
@@ -19,6 +19,7 @@ export function TimelineView() {
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
             className={`relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active`}
+            role="listitem"
           >
             {/* Icon */}
             <div className="flex items-center justify-center w-10 h-10 rounded-full border bg-background shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">

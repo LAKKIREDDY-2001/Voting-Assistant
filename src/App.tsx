@@ -4,8 +4,7 @@
  */
 
 import { useState, useCallback } from "react";
-import { Vote, MessageSquare, Calendar, GraduationCap, Github } from "lucide-react";
-import { motion } from "framer-motion";
+import { Vote, Calendar } from "lucide-react";
 import { askElectionAssistant } from "./services/gemini";
 import { MessageList } from "./components/chat/MessageList";
 import { ChatInput } from "./components/chat/ChatInput";

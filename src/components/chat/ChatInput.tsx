@@ -10,7 +10,7 @@ interface ChatInputProps {
 export function ChatInput({ onSend, disabled }: ChatInputProps) {
   const [input, setInput] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: { preventDefault: () => void }) => {
     e.preventDefault();
     if (input.trim() && !disabled) {
       onSend(input.trim());
@@ -19,16 +19,19 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2 p-1 bg-muted/30 rounded-xl border">
+    <form onSubmit={handleSubmit} className="flex gap-2 p-1 bg-muted/30 rounded-xl border" role="search" aria-label="Chat with assistant">
+      <label htmlFor="chat-input" className="sr-only">Ask a question about voting</label>
       <input
+        id="chat-input"
         type="text"
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        placeholder="Ask a question about voting..."
+        placeholder="Ask about Indian elections..."
         className="flex-1 bg-transparent px-3 py-2 text-sm focus:outline-none disabled:opacity-50"
         disabled={disabled}
+        aria-disabled={disabled}
       />
-      <Button type="submit" size="icon" disabled={!input.trim() || disabled} className="rounded-lg h-9 w-9">
+      <Button type="submit" size="icon" disabled={!input.trim() || disabled} className="rounded-lg h-9 w-9" aria-label="Send message">
         <Send className="h-4 w-4" />
       </Button>
     </form>
