@@ -95,26 +95,39 @@ async function startServer() {
   });
 
   // Vite middleware for development
-  const isDev = process.env.NODE_ENV !== "production";
-  const distPath = path.join(process.cwd(), "dist");
+  const isDev = process.env.NODE_ENV !== "production" && process.env.NODE_ENV !== "test";
+  const distPath = path.resolve(process.cwd(), "dist");
+
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`Dist Path: ${distPath}`);
 
   if (isDev) {
-    console.log("Starting in DEVELOPMENT mode");
+    console.log("Starting in DEVELOPMENT mode with Vite middleware");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
   } else {
-    console.log("Starting in PRODUCTION mode, serving from:", distPath);
+    console.log("Starting in PRODUCTION mode, serving static files");
     app.use(express.static(distPath));
-    app.get("*", (req, res) => {
+    app.get("*", (req, res, next) => {
+      // Don't intercept API calls that might have fall-through
+      if (req.path.startsWith("/api/")) {
+        return next();
+      }
       res.sendFile(path.join(distPath, "index.html"));
     });
   }
 
+  // 404 Fallback Logger
+  app.use((req, res) => {
+    console.warn(`404 - Not Found: ${req.method} ${req.path}`);
+    res.status(404).json({ error: "Route not found", path: req.path });
+  });
+
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server successfully started on port ${PORT}`);
   });
 }
 
