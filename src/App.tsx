@@ -4,6 +4,7 @@
  */
 
 import { useState, useCallback } from "react";
+import { HelmetProvider, Helmet } from "react-helmet-async";
 import { Vote, Calendar } from "lucide-react";
 import { askElectionAssistant } from "./services/gemini";
 import { MessageList } from "./components/chat/MessageList";
@@ -49,8 +50,14 @@ export default function App() {
   }, [messages]);
 
   return (
-    <TooltipProvider>
-      <div className="flex flex-col h-screen bg-slate-50 font-sans overflow-hidden text-slate-900">
+    <HelmetProvider>
+      <TooltipProvider>
+        <div className="flex flex-col h-screen bg-slate-50 font-sans overflow-hidden text-slate-900">
+          <Helmet>
+            <title>CivicPulse India | AI Voter Assistant</title>
+            <meta name="description" content="AI-powered assistant for the Indian democratic election process, grounded in ECI data." />
+            <meta name="keywords" content="India Elections, ECI, Voter Registration, EPIC Card, Lok Sabha, Vidhan Sabha" />
+          </Helmet>
         {/* Top Header */}
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 flex-shrink-0 z-50">
           <div className="flex items-center gap-3">
@@ -249,8 +256,9 @@ export default function App() {
               </div>
             </div>
           </aside>
+          </div>
         </div>
-      </div>
-    </TooltipProvider>
+      </TooltipProvider>
+    </HelmetProvider>
   );
 }

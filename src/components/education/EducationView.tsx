@@ -27,6 +27,14 @@ const EDU_MODULES = [
     link: "https://voters.eci.gov.in/download-epic",
     icon: Info,
     color: "bg-green-500/10 text-green-500"
+  },
+  {
+    title: "Polling Station Locator",
+    description: "Find where to vote using Google Maps.",
+    content: "Locate your designated polling station on the map. You can search by your EPIC number or via your area details on the official ECI map portal.",
+    link: "https://voterportal.eci.gov.in/",
+    icon: ExternalLink,
+    color: "bg-purple-500/10 text-purple-500"
   }
 ];
 

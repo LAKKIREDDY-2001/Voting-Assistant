@@ -37,7 +37,7 @@ export default [
         FormData: "readonly",
         TextDecoder: "readonly",
         self: "readonly",
-        structuredClone: "readonly",
+        StructuredClone: "readonly",
         requestAnimationFrame: "readonly",
         queueMicrotask: "readonly",
         matchMedia: "readonly",
@@ -48,6 +48,8 @@ export default [
         CSS: "readonly",
         __dirname: "readonly",
         require: "readonly",
+        global: "readonly",
+        vi: "readonly",
       },
     },
     plugins: {

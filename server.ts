@@ -1,19 +1,40 @@
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
-import { fileURLToPath } from "url";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 
-dotenv.config();
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+dotenv.config();
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  // Security Middlewares
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        "img-src": ["'self'", "data:", "https://*.google.com", "https://*.googleusercontent.com"],
+        "connect-src": ["'self'", "https://*.google.com", "https://*.googleapis.com"],
+        "frame-ancestors": ["'self'", "https://*.run.app", "https://ais-*.run.app", "https://*.google.com"],
+      },
+    },
+    frameguard: false, // Allow iframes for the preview
+  }));
+
+  console.log("Middlewares initialized");
+
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    message: { error: "Too many requests from this IP, please try again after 15 minutes" }
+  });
+
+  app.use("/api/", limiter);
   app.use(express.json());
 
   // Gemini API Route
